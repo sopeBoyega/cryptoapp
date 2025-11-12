@@ -89,12 +89,12 @@ class Web3Theme {
   static final List<BoxShadow> shadowNeonCyan = [
     BoxShadow(
       color: primary.withOpacity(0.3),
-      blurRadius: 20,
+      blurRadius: 10,
       spreadRadius: 0,
     ),
     BoxShadow(
       color: primary.withOpacity(0.1),
-      blurRadius: 40,
+      blurRadius: 10,
       spreadRadius: 0,
     ),
   ];

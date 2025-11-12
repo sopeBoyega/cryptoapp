@@ -1,5 +1,8 @@
+import 'package:cryptoapp/data/dummy_data.dart';
+import 'package:cryptoapp/screens/coin_details.dart';
 import 'package:cryptoapp/theme.dart';
 import 'package:cryptoapp/widgets/app_icon.dart';
+import 'package:cryptoapp/widgets/listtile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -41,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
         actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.star_border_outlined))
+          IconButton(onPressed: () {}, icon: Icon(Icons.favorite_outline_outlined,color: Colors.white,))
         ],
       ),
 
@@ -104,8 +107,33 @@ class _HomeScreenState extends State<HomeScreen> {
         Positioned.fill(
           child: Column(
             children: [
-              SearchBar(),
-           
+              // SearchBar(),
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.all(10.0),
+                  itemCount: CoinDummyData.coins.length,
+                  itemBuilder: (context, index) {
+                    final currentCoin = CoinDummyData.coins[index];
+
+                    // return a simple, concrete widget to ensure the builder compiles and displays.
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (ctx) => CoinDetails(coin: currentCoin,)));
+                      },
+                      child: CryptoListTile(
+                        
+                        name: currentCoin.name,
+                        price: currentCoin.currentPrice.toString(),
+                        changePercent: currentCoin.priceChangePercentage24h,
+                        symbol: currentCoin.symbol.toUpperCase(),
+                        imageUrl: currentCoin.imageUrl,
+                                         
+                      
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
           )
         ),
