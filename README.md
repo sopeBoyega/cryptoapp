@@ -13,7 +13,7 @@ APK (Release)
 
 Demo video
 
-- Demo video (replace with actual URL): [REPLACE_WITH_DEMO_VIDEO_URL](https://drive.google.com/file/d/1BFwumfeDXyRmFe4RHaZWkjnxHq4MDEfz/view?usp=sharing)
+- Demo video (replace with actual URL): https://drive.google.com/file/d/1BFwumfeDXyRmFe4RHaZWkjnxHq4MDEfz/view?usp=sharing
 
 ---
 
@@ -118,13 +118,9 @@ flutter test
 
 ## Credits & License
 
-This project was created as a demo. Update this section with your name, license and any attributions.
+Mosope Adegboyega
+2025.
 
 ---
 
-If you want, I can:
 
-- Add a `releases/` folder and place a sample (small) APK there (you'll need to upload the actual APK to the workspace), or
-- Create a GitHub Releases page and populate the README with the proper release link (requires uploading the APK somewhere).
-
-Tell me which option you prefer and I will update the README accordingly.
