@@ -55,7 +55,7 @@ class InfoCard extends StatelessWidget {
                 Text(
                   value,
                   style: GoogleFonts.inter(
-                    color: valueColor,
+                    color: Web3Theme.foreground,
                     fontSize: 22, // Larger font size for emphasis
                     fontWeight: FontWeight.bold,
                   ),

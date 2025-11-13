@@ -1,22 +1,16 @@
-import 'dart:convert';
-
 import 'package:cryptoapp/data/dummy_data.dart';
 import 'package:cryptoapp/models/coin.dart';
 import 'package:cryptoapp/screens/coin_details.dart';
+import 'package:cryptoapp/screens/favorites.dart';
+import 'package:cryptoapp/services/coingecko.dart';
 import 'package:cryptoapp/theme.dart';
 import 'package:cryptoapp/widgets/app_icon.dart';
-import 'package:cryptoapp/widgets/listtile.dart';
+import 'package:cryptoapp/widgets/list_tile.dart';
+import 'package:cryptoapp/provider/coin_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:http/http.dart' as http ;
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 
-
- String BASE_URL = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin&names=Bitcoin&symbols=btc&category=layer-1&price_change_percentage=24h";
- String? apiKey = dotenv.env['API_KEY'];
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,61 +21,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>  {
   late Future<List<Coin>> _loadedCoins;
-  late Box<dynamic> box;
-
- void _loadHive() async {
-    await Hive.initFlutter();
- }
 
   @override
   void initState(){
     super.initState();
-    _loadHive();
-    _loadedCoins = fetchData();
+    _loadedCoins = CoinGeckoService.fetchCoinMarkets();
   }
 
-  Future<bool> isOnline() async {
-  var result = await Connectivity().checkConnectivity();
-  return result != ConnectivityResult.none;
-}
-
-Future<List<Coin>> fetchData() async {
-  final online = await isOnline();
-  box = await Hive.openBox('cachedData');
-
-  if (online) {
-
-    Map<String, String> headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': 'Bearer $apiKey',
-  };
-
-    final response = await http.get(Uri.parse(BASE_URL),headers: headers);
-    if (response.statusCode == 200) {
-      box.put('homeData', response.body);
-      debugPrint(response.body);
-      final decoded = jsonDecode(response.body) as List<dynamic>;
-      return decoded.map((e) => Coin.fromJson(e as Map<String, dynamic>)).toList();
-    } else {
-      throw Exception('Failed to fetch data');
-    }
-  } else {
-    final cached = box.get('homeData');
-    if (cached != null) {
-      final decoded = jsonDecode(cached) as List<dynamic>;
-      return decoded.map((e) => Coin.fromJson(e as Map<String, dynamic>)).toList();
-    } else {
-      throw Exception('No internet and no cached data');
-    }
-  }
-}
 
 
 
   @override
   Widget build(BuildContext context) {
-    _loadedCoins = fetchData();
     return Scaffold(
       backgroundColor: Web3Theme.background,
       appBar: AppBar(
@@ -109,7 +60,9 @@ Future<List<Coin>> fetchData() async {
 
 
         actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.favorite_outline_outlined,color: Colors.white,))
+          IconButton(onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => FavoritesPage()));
+          }, icon: Icon(Icons.favorite_outline_outlined,color: Colors.white,))
         ],
       ),
 
@@ -229,17 +182,30 @@ Future<List<Coin>> fetchData() async {
                           itemCount: fallback.length,
                           itemBuilder: (context, index) {
                             final currentCoin = fallback[index];
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (ctx) => CoinDetails(coin: currentCoin,)));
+                            return Consumer<CoinProvider>(
+                              builder: (context, coinProvider, _) {
+                                final isFav = coinProvider.isFavorite(currentCoin);
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (ctx) => CoinDetails(coin: currentCoin,)));
+                                  },
+                                  child: CryptoListTile(
+                                    name: currentCoin.name,
+                                    price: currentCoin.currentPrice.toStringAsFixed(2),
+                                    changePercent: currentCoin.priceChangePercentage24h,
+                                    symbol: currentCoin.symbol.toUpperCase(),
+                                    imageUrl: currentCoin.imageUrl,
+                                    isFavorite: isFav,
+                                    onFavoritePressed: () {
+                                      if (isFav) {
+                                        coinProvider.removeFavorite(currentCoin);
+                                      } else {
+                                        coinProvider.addFavorite(currentCoin);
+                                      }
+                                    },
+                                  ),
+                                );
                               },
-                              child: CryptoListTile(
-                                name: currentCoin.name,
-                                price: currentCoin.currentPrice.toStringAsFixed(2),
-                                changePercent: currentCoin.priceChangePercentage24h,
-                                symbol: currentCoin.symbol.toUpperCase(),
-                                imageUrl: currentCoin.imageUrl,
-                              ),
                             );
                           },
                         ),
@@ -251,17 +217,30 @@ Future<List<Coin>> fetchData() async {
                         itemCount: coins.length,
                         itemBuilder: (context, index) {
                           final currentCoin = coins[index];
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (ctx) => CoinDetails(coin: currentCoin,)));
+                          return Consumer<CoinProvider>(
+                            builder: (context, coinProvider, _) {
+                              final isFav = coinProvider.isFavorite(currentCoin);
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (ctx) => CoinDetails(coin: currentCoin,)));
+                                },
+                                child: CryptoListTile(
+                                  name: currentCoin.name,
+                                  price: currentCoin.currentPrice.ceil().toStringAsFixed(2),
+                                  changePercent: currentCoin.priceChangePercentage24h,
+                                  symbol: currentCoin.symbol.toUpperCase(),
+                                  imageUrl: currentCoin.imageUrl,
+                                  isFavorite: isFav,
+                                  onFavoritePressed: () {
+                                    if (isFav) {
+                                      coinProvider.removeFavorite(currentCoin);
+                                    } else {
+                                      coinProvider.addFavorite(currentCoin);
+                                    }
+                                  },
+                                ),
+                              );
                             },
-                            child: CryptoListTile(
-                              name: currentCoin.name,
-                              price: currentCoin.currentPrice.ceil().toStringAsFixed(2),
-                              changePercent: currentCoin.priceChangePercentage24h,
-                              symbol: currentCoin.symbol.toUpperCase(),
-                              imageUrl: currentCoin.imageUrl,
-                            ),
                           );
                         },
                       );

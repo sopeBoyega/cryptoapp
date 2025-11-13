@@ -1,7 +1,6 @@
 import 'package:cryptoapp/models/coin.dart';
 
 
-
 class CoinDummyData {
   static final List<Coin> coins = [
     Coin(
@@ -9,8 +8,10 @@ class CoinDummyData {
       symbol: 'btc',
       name: 'Bitcoin',
       imageUrl: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
-      currentPrice: 97500,
-      marketCap: 1920000000000,
+      currentPrice: 97500.0,
+      high24: 1.2,
+      low24: 2.5,
+      marketCap: 1920000000000.0,
       marketCapRank: 1,
       priceChangePercentage24h: 2.45,
     ),
@@ -18,9 +19,12 @@ class CoinDummyData {
       id: 'ethereum',
       symbol: 'eth',
       name: 'Ethereum',
-      imageUrl: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
-      currentPrice: 3600,
-      marketCap: 432000000000,
+      imageUrl:
+          'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
+      currentPrice: 3600.0,
+      high24: 1.2,
+      low24: 2.5,
+      marketCap: 432000000000.0,
       marketCapRank: 2,
       priceChangePercentage24h: 1.82,
     ),
@@ -28,9 +32,12 @@ class CoinDummyData {
       id: 'cardano',
       symbol: 'ada',
       name: 'Cardano',
-      imageUrl: 'https://assets.coingecko.com/coins/images/975/large/cardano.png',
-      currentPrice: 108,
-      marketCap: 38000000000,
+      imageUrl:
+          'https://assets.coingecko.com/coins/images/975/large/cardano.png',
+      currentPrice: 108.0,
+      high24: 1.2,
+      low24: 2.5,
+      marketCap: 38000000000.0,
       marketCapRank: 4,
       priceChangePercentage24h: 3.21,
     ),
@@ -38,9 +45,12 @@ class CoinDummyData {
       id: 'solana',
       symbol: 'sol',
       name: 'Solana',
-      imageUrl: 'https://assets.coingecko.com/coins/images/4128/large/solana.png',
-      currentPrice: 240,
-      marketCap: 82000000000,
+      imageUrl:
+          'https://assets.coingecko.com/coins/images/4128/large/solana.png',
+      currentPrice: 240.0,
+      high24: 1.2,
+      low24: 2.5,
+      marketCap: 82000000000.0,
       marketCapRank: 5,
       priceChangePercentage24h: -1.15,
     ),
