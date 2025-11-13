@@ -1,11 +1,22 @@
+import 'dart:convert';
+
 import 'package:cryptoapp/data/dummy_data.dart';
+import 'package:cryptoapp/models/coin.dart';
 import 'package:cryptoapp/screens/coin_details.dart';
 import 'package:cryptoapp/theme.dart';
 import 'package:cryptoapp/widgets/app_icon.dart';
 import 'package:cryptoapp/widgets/listtile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:http/http.dart' as http ;
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+
+ String BASE_URL = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin&names=Bitcoin&symbols=btc&category=layer-1&price_change_percentage=24h";
+ String? apiKey = dotenv.env['API_KEY'];
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,9 +25,63 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>  {
+  late Future<List<Coin>> _loadedCoins;
+  late Box<dynamic> box;
+
+ void _loadHive() async {
+    await Hive.initFlutter();
+ }
+
+  @override
+  void initState(){
+    super.initState();
+    _loadHive();
+    _loadedCoins = fetchData();
+  }
+
+  Future<bool> isOnline() async {
+  var result = await Connectivity().checkConnectivity();
+  return result != ConnectivityResult.none;
+}
+
+Future<List<Coin>> fetchData() async {
+  final online = await isOnline();
+  box = await Hive.openBox('cachedData');
+
+  if (online) {
+
+    Map<String, String> headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': 'Bearer $apiKey',
+  };
+
+    final response = await http.get(Uri.parse(BASE_URL),headers: headers);
+    if (response.statusCode == 200) {
+      box.put('homeData', response.body);
+      debugPrint(response.body);
+      final decoded = jsonDecode(response.body) as List<dynamic>;
+      return decoded.map((e) => Coin.fromJson(e as Map<String, dynamic>)).toList();
+    } else {
+      throw Exception('Failed to fetch data');
+    }
+  } else {
+    final cached = box.get('homeData');
+    if (cached != null) {
+      final decoded = jsonDecode(cached) as List<dynamic>;
+      return decoded.map((e) => Coin.fromJson(e as Map<String, dynamic>)).toList();
+    } else {
+      throw Exception('No internet and no cached data');
+    }
+  }
+}
+
+
+
   @override
   Widget build(BuildContext context) {
+    _loadedCoins = fetchData();
     return Scaffold(
       backgroundColor: Web3Theme.background,
       appBar: AppBar(
@@ -48,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-    
+
       body: Stack(
       children: [
 
@@ -73,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
 
-      
+
         Positioned(
           top: 0,
           left: 0,
@@ -83,9 +148,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Align(
               alignment: Alignment.topCenter, 
               child: Container(
-        
+
                 constraints: BoxConstraints(maxWidth: 1024.0),
-            
+
                 height: 384.0,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -107,37 +172,109 @@ class _HomeScreenState extends State<HomeScreen> {
         Positioned.fill(
           child: Column(
             children: [
-              // SearchBar(),
+             
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              //   child: Container(
+              //     constraints: BoxConstraints(maxWidth: 1024.0),
+              //     decoration: BoxDecoration(
+              //       color: Web3Theme.card,
+              //       borderRadius: BorderRadius.circular(12.0),
+              //       boxShadow: [
+              //         BoxShadow(
+              //           color: Colors.black.withOpacity(0.12),
+              //           blurRadius: 8,
+              //           offset: Offset(0, 2),
+              //         ),
+              //       ],
+              //       border: Border.all(
+              //         width: 1,
+              //         color: Web3Theme.primary.withOpacity(0.08),
+              //       ),
+              //     ),
+              //     child: TextField(
+              //       onChanged: (val) {
+              //         setState(() {
+              //            var _searchQuery = val;
+              //         });
+              //       },
+              //       style: GoogleFonts.inter(color: Colors.white),
+              //       cursorColor: Web3Theme.primary,
+              //       decoration: InputDecoration(
+              //         prefixIcon: Padding(
+              //           padding: const EdgeInsets.only(left: 12.0, right: 8.0),
+              //           child: Icon(Icons.search, color: Web3Theme.primary),
+              //         ),
+              //         prefixIconConstraints: BoxConstraints(minWidth: 40),
+              //         hintText: 'Search coins (name or symbol)',
+              //         hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+              //         border: InputBorder.none,
+              //         contentPadding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 8.0),
+              //       ),
+              //     ),
+              //   ),
+              // ),
               Expanded(
-                child: ListView.builder(
-                  padding: EdgeInsets.all(10.0),
-                  itemCount: CoinDummyData.coins.length,
-                  itemBuilder: (context, index) {
-                    final currentCoin = CoinDummyData.coins[index];
-
-                    // return a simple, concrete widget to ensure the builder compiles and displays.
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (ctx) => CoinDetails(coin: currentCoin,)));
-                      },
-                      child: CryptoListTile(
-                        
-                        name: currentCoin.name,
-                        price: currentCoin.currentPrice.toString(),
-                        changePercent: currentCoin.priceChangePercentage24h,
-                        symbol: currentCoin.symbol.toUpperCase(),
-                        imageUrl: currentCoin.imageUrl,
-                                         
-                      
-                      ),
-                    );
+                child: FutureBuilder<List<Coin>>(
+                  future: _loadedCoins,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      // fallback to dummy data if you want
+                      final fallback = CoinDummyData.coins;
+                      return SingleChildScrollView(
+                        child: ListView.builder(
+                          padding: EdgeInsets.all(10.0),
+                          itemCount: fallback.length,
+                          itemBuilder: (context, index) {
+                            final currentCoin = fallback[index];
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (ctx) => CoinDetails(coin: currentCoin,)));
+                              },
+                              child: CryptoListTile(
+                                name: currentCoin.name,
+                                price: currentCoin.currentPrice.toStringAsFixed(2),
+                                changePercent: currentCoin.priceChangePercentage24h,
+                                symbol: currentCoin.symbol.toUpperCase(),
+                                imageUrl: currentCoin.imageUrl,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    } else if (snapshot.hasData) {
+                      final coins = snapshot.data!;
+                      return ListView.builder(
+                        padding: EdgeInsets.all(5.0),
+                        itemCount: coins.length,
+                        itemBuilder: (context, index) {
+                          final currentCoin = coins[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (ctx) => CoinDetails(coin: currentCoin,)));
+                            },
+                            child: CryptoListTile(
+                              name: currentCoin.name,
+                              price: currentCoin.currentPrice.ceil().toStringAsFixed(2),
+                              changePercent: currentCoin.priceChangePercentage24h,
+                              symbol: currentCoin.symbol.toUpperCase(),
+                              imageUrl: currentCoin.imageUrl,
+                            ),
+                          );
+                        },
+                      );
+                    } else {
+                      return Center(child: Text('No data'));
+                    }
                   },
                 ),
               ),
             ],
           )
         ),
-     
+
       ],
     )
     );

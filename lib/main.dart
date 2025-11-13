@@ -1,8 +1,14 @@
 import 'package:cryptoapp/screens/home.dart';
 import 'package:cryptoapp/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+void main() async{
+  // Ensure Flutter is initialized
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load the .env file
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 

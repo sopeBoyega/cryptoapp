@@ -70,7 +70,7 @@ class CryptoListTile extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      name,
+                      name.length < 14 ? name : "Coin",
                       style: GoogleFonts.inter(
                         color: Web3Theme.foreground,
                         fontWeight: FontWeight.bold,
@@ -90,7 +90,7 @@ class CryptoListTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 // Subtitle (Price)
                 Text(
-                  "\$$price",
+                  "\$${price}",
                   style: GoogleFonts.inter(
                     color: Web3Theme.foreground,
                     fontSize: 18, // Note: Larger than the title
@@ -106,7 +106,7 @@ class CryptoListTile extends StatelessWidget {
 
           // Percentage Change Chip
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 6),
             decoration: BoxDecoration(
               color: changeColor.withOpacity(0.15), // Soft background
               borderRadius: BorderRadius.circular(12),
@@ -114,9 +114,9 @@ class CryptoListTile extends StatelessWidget {
             child: Row(
               children: [
                 Icon(changeIcon, color: changeColor, size: 16),
-                const SizedBox(width: 4),
+                const SizedBox(width: 1),
                 Text(
-                  "${isPositive ? '+' : ''}$changePercent%",
+                  "${isPositive ? '+' : ''}${changePercent.toStringAsFixed(2)}%",
                   style: GoogleFonts.inter(
                     color: changeColor,
                     fontWeight: FontWeight.bold,
@@ -126,7 +126,7 @@ class CryptoListTile extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
 
           // Star Icon
           IconButton(
