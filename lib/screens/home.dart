@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen>  {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
-                      // fallback to dummy data if you want
+                
                       final fallback = CoinDummyData.coins;
                       return SingleChildScrollView(
                         child: ListView.builder(
@@ -245,7 +245,10 @@ class _HomeScreenState extends State<HomeScreen>  {
                         },
                       );
                     } else {
-                      return Center(child: Text('No data'));
+                      return Center(child: Text('No data, Please check your internet connection', style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 28
+                      ),));
                     }
                   },
                 ),
