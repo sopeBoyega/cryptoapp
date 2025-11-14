@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cryptoapp/models/coin.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -80,7 +80,7 @@ class CoinGeckoService {
         }
       }
     } finally {
-      await box.close();
+     
     }
   }
 
